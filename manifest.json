@@ -12,12 +12,6 @@
                 "128": "imgres.png"
              },
     "permissions": [
-        "hid",
-        "tts",
-        {
-            "usbDevices": [
-                { "vendorId": 9044, "productId": 13107 }
-            ]
-        }
+        "serial"
     ]
 }
