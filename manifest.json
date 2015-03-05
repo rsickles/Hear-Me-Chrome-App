@@ -1,0 +1,23 @@
+{
+    "name": "Hear Me App",
+    "manifest_version": 2,
+    "version": "0.1",
+    "minimum_chrome_version": "37",
+    "app": {
+        "background": {
+            "scripts": [ "background.js"]
+        }
+    },
+    "icons": {
+                "128": "imgres.png"
+             },
+    "permissions": [
+        "hid",
+        "tts",
+        {
+            "usbDevices": [
+                { "vendorId": 9044, "productId": 13107 }
+            ]
+        }
+    ]
+}
