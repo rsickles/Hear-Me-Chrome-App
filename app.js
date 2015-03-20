@@ -12,21 +12,23 @@ var onGetDevices = function(ports) {
 
 var onConnect = function(connectionInfo) {
    // The serial port has been opened. Save its id to use later.
-   console.log(connectionInfo);
+   //console.log(connectionInfo);
    connectionId = connectionInfo.connectionId;
    console.log(connectionId);
    //try to conenct to the port
+   chrome.serial.onReceive.addListener(onReceiveCallback);
    writeSerial("M");
    writeSerial("E");
    writeSerial("F");
-  chrome.serial.onReceive.addListener(onReceiveCallback);
 };
 
 var onReceiveCallback = function(info) {
+      console.log("This is the info   ");
+      console.log(bufferToString(info.data));
     if (info.connectionId == connectionId && info.data) {
-      console.log(info.data);
+      //console.log(info.data);
       var str = String.fromCharCode.apply(null, new Uint16Array(info.data));
-      console.log(str);
+      //console.log(str);
       if (str.charAt(str.length-1) === '\n') {
         stringReceived += str.substring(0, str.length-1);
         onLineReceived(stringReceived);
@@ -41,6 +43,8 @@ var onReceiveCallback = function(info) {
 var writeSerial=function(str) {
   chrome.serial.send(connectionId, convertStringToArrayBuffer(str), onReceiveCallback);
 };
+
+
 // Convert string to ArrayBuffer
 var convertStringToArrayBuffer=function(str) {
   var buf=new ArrayBuffer(str.length);
@@ -50,6 +54,12 @@ var convertStringToArrayBuffer=function(str) {
   }
   return buf;
 };
+
+//arraybuffer to string
+function bufferToString( buf ) {
+    var view = new Uint8Array( buf );
+    return Array.prototype.join.call(view, ",");
+}
 
 $( document ).ready(function() {
    chrome.serial.getDevices(onGetDevices);
