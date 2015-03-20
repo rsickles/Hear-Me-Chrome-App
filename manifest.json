@@ -5,7 +5,7 @@
     "minimum_chrome_version": "37",
     "app": {
         "background": {
-            "scripts": [ "background.js"]
+            "scripts": [ "background.js","helpers.js", "app.js"]
         }
     },
     "icons": {

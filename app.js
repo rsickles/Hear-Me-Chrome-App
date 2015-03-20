@@ -1,5 +1,4 @@
 //globally defined variables
-var stringReceived = '';
 var connectionId = null;
 
 var onGetDevices = function(ports) {
@@ -29,7 +28,6 @@ var onReceiveCallback = function(info) {
       var str = "";
       var decimal_value = bufferToString(info.data);
       //value is more than one decimal value
-      console.log(decimal_value);
       if (decimal_value.length>2) {
         var string_array = decimal_value.split(",");
         //console.log(string_array);
@@ -41,6 +39,7 @@ var onReceiveCallback = function(info) {
       else {
         str = String.fromCharCode(decimal_value);
       }
+      //logs the output to the user
       console.log(str);
     }
   };
