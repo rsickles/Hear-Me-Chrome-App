@@ -23,19 +23,25 @@ var onConnect = function(connectionInfo) {
 };
 
 var onReceiveCallback = function(info) {
-      console.log("This is the info   ");
-      console.log(bufferToString(info.data));
+      // console.log("This is the info   ");
+      // console.log(bufferToString(info.data));
     if (info.connectionId == connectionId && info.data) {
-      //console.log(info.data);
-      var str = String.fromCharCode.apply(null, new Uint16Array(info.data));
-      //console.log(str);
-      if (str.charAt(str.length-1) === '\n') {
-        stringReceived += str.substring(0, str.length-1);
-        onLineReceived(stringReceived);
-        stringReceived = '';
-      } else {
-        stringReceived += str;
+      var str = "";
+      var decimal_value = bufferToString(info.data);
+      //value is more than one decimal value
+      console.log(decimal_value);
+      if (decimal_value.length>2) {
+        var string_array = decimal_value.split(",");
+        //console.log(string_array);
+        for(x=0; x<string_array.length; x++){
+          str+=String.fromCharCode(string_array[x]);
+        }
       }
+      //just one decimal value
+      else {
+        str = String.fromCharCode(decimal_value);
+      }
+      console.log(str);
     }
   };
 
