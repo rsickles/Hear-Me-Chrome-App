@@ -3,14 +3,15 @@ var onGetDevices = function(ports) {
   for (var i=0; i<ports.length; i++) {
     console.log(ports[i].path);
     //connect to serial port
-    chrome.serial.connect("/dev/tty.Bluetooth-Incoming-Port", {bitrate: 115200}, onConnect);
   }
+  //cant connect to when other services are polling it (i.e. coolterm) :(
+  chrome.serial.connect("/dev/tty.usbmodem1411", {bitrate: 9600}, onConnect);
 };
 
 var onConnect = function(connectionInfo) {
    // The serial port has been opened. Save its id to use later.
-   console.log(connectionInfo.connectionId);
-  _this.connectionId = connectionInfo.connectionId;
+   console.log(connectionInfo);
+  //_this.connectionId = connectionInfo.connectionId;
   // Do whatever you need to do with the opened port.
 };
 // Connect to the serial port /dev/ttyS01
