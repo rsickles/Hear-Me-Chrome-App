@@ -11,14 +11,5 @@
     "icons": {
                 "128": "imgres.png"
              },
-    "permissions": [ "serial",
-  {
-    "usbDevices": [
-      {
-        "vendorId": "03eb",
-        "productId": 2044
-      }
-    ]
-  }
-]
+    "permissions": [ "serial"]
 }
