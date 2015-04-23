@@ -1,4 +1,5 @@
-//globally defined variables
+
+ //globally defined variables
 var connectionId = null;
 
 var onGetDevices = function(ports) {
@@ -13,7 +14,6 @@ var onConnect = function(connectionInfo) {
    // The serial port has been opened. Save its id to use later.
    //console.log(connectionInfo);
    connectionId = connectionInfo.connectionId;
-   console.log(connectionId);
    //try to conenct to the port
    chrome.serial.onReceive.addListener(onReceiveCallback);
    writeSerial("M");
@@ -58,19 +58,67 @@ var writeWavToSerial=function(str){
 var convertStringToArrayBuffer=function(str) {
   var buf=new ArrayBuffer(str.length);
   var bufView=new Uint8Array(buf);
-  for (var i=0; i<str.length; i++) {
+  for (var i=0; i<bufView.length; i++) {
     bufView[i]=str.charCodeAt(i);
   }
   return buf;
 };
 
 var sendOverWaveData=function(str){
-  var buf=new ArrayBuffer(str.length);
-  var bufView=new Uint8Array(buf);
-  for (var i=0; i<str.length; i++) {
-    bufView[i*256]=str.charCodeAt(i);
+  //holds location of first story
+  var story_loc = 0;
+  //holds index of wav string that is being sent over in chunks
+  var string_starting_point = 0;
+  //create initial arraybuffer to hold 256 bytes of file
+  var buf = new ArrayBuffer(256);
+  //bufview to read/write to arraybuffer
+  var bufView = new Uint8Array(buf);
+  //initalize the number of chunks to send
+  var num_packets_to_send = 0;
+
+  //below calculates whether an extra chunk needs to added
+  var num_packets = (str.length/256 % 256);
+  if(num_packets!==0){
+    num_packets_to_send = Math.floor(str.length/256) + 1;
   }
-  return buf;
+  else {
+    num_packets_to_send = Math.floor(str.length/256);
+  }
+
+  //starts to send each chunk of wav string data
+  for(var x = 0; x<num_packets_to_send; x++){
+    //initialize new buffer for each chunk to send over
+    buf=new ArrayBuffer(256);
+    bufView=new Uint8Array(buf);
+    //send data over
+    writeSerial("D");
+    //send starting location of story
+    writeSerial(String.fromCharCode(story_loc));
+    //holds index location of bufview
+    var location = 0;
+    //add parts of wav string data to byte array
+    for (var i=string_starting_point; i<(string_starting_point+256); i++){
+       //check for zeros
+       if(i>str.length-1){
+        var character = String.fromCharCode(0);
+       }else{
+          var character = str.charCodeAt(i);
+       }
+       bufView[location] = character;
+       location+=1;
+    }
+    //move next chunk starting location
+    story_loc += 256;
+    //increase string index location
+    string_starting_point += 256;
+    //send over data in arraybuffer
+    chrome.serial.send(connectionId, buf, onReceiveCallback);
+  }
+  // NOTES //
+  //length/256 % 256 if left over send (+ 1 to total number of packets (total_num_packets = length/256) so evenly send over certain amount and just pad zeros at the end of each chunk) is number of packets i need to send
+  //send over string[0-255] (pad with zeros if needed) 0-255, keep track of address
+  //send another d after first chunk is sent and then send new location (last_loc + 256)
+  //test using audacity
 };
 
 //arraybuffer to string
@@ -100,8 +148,6 @@ function getFileInfo(){
                 reader.readAsBinaryString(file); //file as binary string
                 reader.onload = function(event) {
                   var wav_string = event.currentTarget.result; //wav file as binary string
-                  var buf = new ArrayBuffer(wav_string.length*4); // 4 bytes for each char
-                  var bufView = new Uint8Array(buf); //
                   //intiaties transfer
                   writeSerial("I");
                   //holds number of stories
@@ -111,17 +157,8 @@ function getFileInfo(){
                   //holds file length
                   writeSerial(String.fromCharCode((wav_string.length >> 0) & 0xFF));
                   //now to send data over
-                  writeSerial("D");
-                  //holds starting location of story
-                  writeSerial(String.fromCharCode((0 >> 0) & 0xFF));
                   //write the data over
-                  writeWavToSerial(wav_string);
-                  // bufView[0] = String.fromCharCode((0 >> 0) & 0xFF);
-                  // for (var i=1, strLen=wav_string.length; i<strLen; i++) {
-                  //   bufView[i] = wav_string.charCodeAt(i);
-                  // }
-                  // console.log(bufView);
-                  //chrome.serial.send(connectionId, bufView, onReceiveCallback);
+                  sendOverWaveData(wav_string);
                 }
                 if ('name' in file) {
                     txt += "name: " + file.name + "<br>";
